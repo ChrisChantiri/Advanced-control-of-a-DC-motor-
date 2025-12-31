@@ -1,0 +1,71 @@
+#include "lcd.h"
+
+extern I2C_HandleTypeDef hi2c2;
+
+static void lcd_send_cmd(uint8_t cmd)
+{
+    uint8_t data[2] = {0x80, cmd};
+    HAL_I2C_Master_Transmit(&hi2c2, LCD_ADDR, data, 2, HAL_MAX_DELAY);
+}
+
+static void lcd_send_data(uint8_t value)
+{
+    uint8_t data[2] = {0x40, value};
+    HAL_I2C_Master_Transmit(&hi2c2, LCD_ADDR, data, 2, HAL_MAX_DELAY);
+}
+
+void lcd_init(void)
+{
+    HAL_Delay(50);
+
+    lcd_send_cmd(LCD_FUNCTIONSET);
+    HAL_Delay(5);
+
+    lcd_send_cmd(LCD_DISPLAYON);
+    HAL_Delay(5);
+
+    lcd_send_cmd(LCD_CLEAR);
+    HAL_Delay(5);
+
+    lcd_send_cmd(LCD_ENTRYMODE);
+    HAL_Delay(5);
+
+    lcd_set_rgb(255,255,255);
+}
+
+void lcd_clear(void)
+{
+    lcd_send_cmd(LCD_CLEAR);
+    HAL_Delay(2);
+}
+
+void lcd_set_cursor(uint8_t col, uint8_t row)
+{
+    uint8_t addr = (row == 0) ? (0x80 + col) : (0xC0 + col);
+    lcd_send_cmd(addr);
+}
+
+void lcd_write_char(char c)
+{
+    lcd_send_data(c);
+}
+
+void lcd_write_string(const char *str)
+{
+    while (*str)
+        lcd_send_data(*str++);
+}
+
+void lcd_set_rgb(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint8_t data[2];
+
+    data[0] = 0x01; data[1] = r;
+    HAL_I2C_Master_Transmit(&hi2c2, RGB_ADDR, data, 2, HAL_MAX_DELAY);
+
+    data[0] = 0x02; data[1] = g;
+    HAL_I2C_Master_Transmit(&hi2c2, RGB_ADDR, data, 2, HAL_MAX_DELAY);
+
+    data[0] = 0x03; data[1] = b;
+    HAL_I2C_Master_Transmit(&hi2c2, RGB_ADDR, data, 2, HAL_MAX_DELAY);
+}

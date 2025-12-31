@@ -1,0 +1,32 @@
+#include "rpm.h"
+
+volatile uint32_t pulse_count = 0;
+uint32_t last_time = 0;
+
+void RPM_Init(void)
+{
+    pulse_count = 0;
+    last_time = HAL_GetTick();
+}
+
+void RPM_EncoderPulse(void)
+{
+    pulse_count++;
+}
+
+uint32_t RPM_Get(void)
+{
+    uint32_t now = HAL_GetTick();
+    uint32_t dt = now - last_time;
+
+    if (dt < 100) return 0;
+
+    uint32_t pulses = pulse_count;
+    pulse_count = 0;
+    last_time = now;
+
+    float rev = (float)pulses / 374.0f;
+    float minutes = (float)dt / 60000.0f;
+
+    return (uint32_t)(rev / minutes);
+}

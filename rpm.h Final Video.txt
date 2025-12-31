@@ -1,0 +1,10 @@
+#ifndef __RPM_H__
+#define __RPM_H__
+
+#include "main.h"
+
+void RPM_Init(void);
+void RPM_EncoderPulse(void);
+uint32_t RPM_Get(void);
+
+#endif
